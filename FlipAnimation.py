@@ -25,9 +25,9 @@ bl_info = {
     "name": "Flip Animation",
     "description": "Performs a copy and paste flipped pose on all frames of currently selected action.",
     "author": "Kay Bothfeld",
-    "version": (0,3),
-    "blender": (2,5,8),
-    "location": "View3D > Pose Mode > Tool Shelf",
+    "version": (0,4),
+    "blender": (2,7,8),
+    "location": "View3D > Tools",
     "warning": "", # used for warning icon and text in addons panel 
     "wiki_url": "http://www.scio.de/en/blog-a-news/scio-development-blog-en/entry/flip-animation-add-on-for-mirroring-keyframes-in-blender",
     "link": "http://www.scio.de/en/blog-a-news/scio-development-blog-en/entry/flip-animation-add-on-for-mirroring-keyframes-in-blender",
@@ -39,6 +39,7 @@ class FlipAnimationPanel(bpy.types.Panel) :
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_context = "posemode"
+    bl_category = "Tools"
     bl_label = "Flip Animation"
  
     def draw(self, context) :
@@ -66,7 +67,7 @@ class FlipAnimation (bpy.types.Operator) :
     # Frame that was selected at the start of this plugin
     initial_frame = 0
     # Visible bone layers at the start of this plugin, used to restore at the end
-    initial_layers = ()
+    # initial_layers = ()
     # Bone selection  at the start of this plugin, used to restore at the end
     initial_bone_selection = list()
     # Active bone  at the start of this plugin, used to restore at the end
@@ -129,7 +130,7 @@ class FlipAnimation (bpy.types.Operator) :
                     print("selecting ", bone)
                 bpy.context.active_object.data.bones[bone].select = True
         # Restore visible layers
-        context.active_object.data.layers[:] = self.initial_layers
+        # context.active_object.data.layers[:] = self.initial_layers
         # Restore status of "Keyframe insertion" buttons
         bpy.context.scene.tool_settings.use_keyframe_insert_auto=self.initial_keyframe_insert_auto
         bpy.context.scene.tool_settings.use_keyframe_insert_keyingset=self.initial_keyframe_insert_keyingset
@@ -170,11 +171,12 @@ class FlipAnimation (bpy.types.Operator) :
                 return False
             self.start_frame = min(action_last_frame, max(ctx_start, action_first_frame))
             if self.start_frame != ctx_start:
-                self.report({'WARNING'}, "'Start frame' (%d) is is outside the action's frame range' %d-%d!" % (ctx_start, action_first_frame, action_last_frame))
+                # todo why is this not allowed?...
+                self.report({'WARNING'}, "'Start frame' (%d) is outside the action's frame range' %d-%d!" % (ctx_start, action_first_frame, action_last_frame))
                 return False
             self.end_frame = max(action_first_frame, min(ctx_end, action_last_frame))
             if self.end_frame != ctx_end:
-                self.report({'WARNING'}, "'End frame' (%d) is is outside the action's frame range' %d-%d!" % (ctx_end, action_first_frame, action_last_frame))
+                self.report({'WARNING'}, "'End frame' (%d) is outside the action's frame range' %d-%d!" % (ctx_end, action_first_frame, action_last_frame))
                 return False
             self.append_frames_offset = self.end_frame - self.start_frame
         else:   
@@ -202,7 +204,7 @@ class FlipAnimation (bpy.types.Operator) :
                 self.initial_bone_selection.append(bone.name)
 
         # make all layers visible; only visible bones can be keyframed
-        self.initial_layers = context.active_object.data.layers[:]
+        # self.initial_layers = context.active_object.data.layers[:]
         for i in range(len(context.active_object.data.layers)):
             context.active_object.data.layers[i] = True
         return True
